@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.js"></script>
+</head>
+<body>
+  <div id="app">  
+    <img class="card hide" v-for="card in cards" v-bind:src="card" @click="cardClicker" alt="">
+    <img class="card hide" v-for="card in cards" v-bind:src="card" @click="cardClicker" alt="">
+  </div>
+  <script>
+    new Vue({
+      el: '#app',
+      data() {
+        return {
+          limit: 6,
+          cards: [],
+        }
+      },
+      created() {
+        const {limit, cards} = this
+        for (let i = 1; i <= limit; i++) {
+          cards.push(`./img/card_${i}.svg`)
+        }
+      },
+      methods: {
+        cardClicker(event) {
+          event.target.classList.toggle("hide")
+        },
+      }
+    })
+  </script>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+    }
+    #app {
+      position: relative;
+
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      align-content: center;
+      gap: 1.5rem;
+
+      height: 100vh; 
+      margin: auto;
+    }
+    img {
+      display: block;
+      position: relative;
+      width: calc(100vw / 5);
+      transition: all 2s linear;
+      -webkit-transform-style: preserve-3d;
+      -webkit-backface-visibility: hidden;
+      transform: rotateY(0deg);
+    }
+    img:hover {
+      transform: rotateY(180deg);
+    }
+    img.hide:after {
+    content: '';
+    position: absolute;
+    display: block;
+    right: 0px;
+    bottom: 0px;
+    top: 0px;
+    left: 0px;
+    background: black;
+    /* -webkit-transform: rotateY( 180deg );
+    -webkit-transform-style: preserve-3d;
+    -webkit-backface-visibility: hidden; */
+}
+
+    img.show {
+      transform: rotateY(0);
+    }
+  </style>
+</body>
+</html>
