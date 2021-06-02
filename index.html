@@ -10,6 +10,14 @@
 <body>
   <section id="app">    
     <header>
+      <form action="/" @submit.prevent>
+        <label for="limits">Choose a size:</label>
+        <select name="limits" id="limits" v-model="limit">
+          <option value="12" active>24</option>
+          <option value="8">16</option>
+          <option value="6">12</option>
+        </select>
+      </form>
       <button v-if="isWinner" @click="winnerClicker" id="restartBtn">Play again</button>
       <button :disabled="!isPaused" @click="isPaused = !isPaused">Start</button>
       <button :disabled="isPaused" @click="isPaused = !isPaused">Stop</button>
@@ -18,21 +26,24 @@
         <span>Current result: {{ getTime(result) }}</span>
       </div>
     </header>
-    <div id="container">
+    <div id="container" class="large">
       <div class="placeholder" v-if="isPaused"><p>PAUSED</p></div>
+      <div class="placeholder" v-if="isWinner"><p>CONGATULATIONS!</p></div>
       <div 
-      v-for="card in cards" 
+      v-for="(card, index) in cards" 
       v-on:click="cardClicker(card, $event)" 
       :class="{ active: card.isActive }"
       class="card hide" 
+      v-if=" index < Number(limit)"
       >
         <img class="card" v-bind:src="card.src" alt="">
       </div>
       <div 
-      v-for="card in cards" 
+      v-for="(card, index) in cards" 
       v-on:click="cardClicker(card, $event)" 
       :class="{ active: card.isActive }"
       class="card hide" 
+      v-if=" index < Number(limit)"
       >
         <img class="card" v-bind:src="card.src" alt="">
       </div>
@@ -47,7 +58,7 @@
           result: 0,
           results: [],
           interval: setInterval(() => this.result += 100, 100),
-          limit: 6,
+          limit: '12',
           cards: [
             { 
               name: 'bull', 
@@ -116,17 +127,17 @@
       },
       computed: {
         passed() { 
-          return this.cards.filter(card => !!card.isActive) 
+          return this.cards.filter(card => !!card && !!card.isActive) 
         },
         isWinner() {
-          return this.cards.length === this.passed.length
+          return this.passed.filter(card => !!card).length - this.limit === 0
         },
         bestResult() {
           return Math.min(...this.results) | '--'
         }
       },
       mounted() {
-        let {limit, cards} = this
+        let {cards} = this
         // cards.splice(0, --limit)
         const DOMcards = document.querySelectorAll('div.card')
         DOMcards.forEach((element, index) => {
@@ -192,6 +203,28 @@
             clearInterval(this.interval)
             this.results.push(this.result)
           }
+        },
+        limit() {
+          const DOMcards = document.querySelectorAll('div.card')
+          const container = document.getElementById('container')
+          this.result = 0
+          this.results = []
+          this.isPaused = true
+          DOMcards.forEach((element, index) => {
+            element.classList.add('hide')
+            element.classList.remove('active')
+          });
+          switch(this.limit) {
+            case '12': 
+              container.className = 'large'
+              break;
+            case '8': 
+              container.className = 'medium'
+              break;
+            case '6': 
+              container.className = 'small'
+              break;
+          }
         }
       }
     })
@@ -216,6 +249,7 @@
     #app {
       height: 100vh;
       background-color: #003366b3;
+      position: relative;
     }
     #container {
       position: relative;
@@ -223,7 +257,7 @@
       padding: 3rem;
 
       display: grid;
-      grid-template-columns: repeat(6, 1fr);
+      /* grid-template-columns: repeat(6, 1fr); */
       gap: 1rem;
 
       max-width: 700px;
@@ -292,12 +326,27 @@
       justify-self: flex-start;
       margin: 0 0.5rem;
     }
+    #limits {
+      padding: 0.1rem 0.25rem;
+      margin: 0 1rem 0 0;
+    }
     @keyframes passed {
       from {
         background-color: #000;
       } to {
         background-color: #0eaf6c;
       }
+    }
+    #container.large {
+      grid-template-columns: repeat(6, 1fr);
+    }
+    #container.medium {
+      grid-template-columns: repeat(4, 1fr);
+      max-width: 500px;
+    }
+    #container.small {
+      grid-template-columns: repeat(4, 1fr);
+      max-width: 500px;
     }
   </style>
 </body>
