@@ -9,27 +9,133 @@
 </head>
 <body>
   <div id="app">  
-    <img class="card hide" v-for="card in cards" v-bind:src="card" @click="cardClicker" alt="">
-    <img class="card hide" v-for="card in cards" v-bind:src="card" @click="cardClicker" alt="">
+    <div 
+    v-for="card in cards" 
+    v-on:click="cardClicker(card, $event)" 
+    :class="{ active: card.isActive }"
+    class="card hide" 
+    >
+      <img class="card" v-bind:src="card.src" alt="">
+    </div>
+    <div 
+    v-for="card in cards" 
+    v-on:click="cardClicker(card, $event)" 
+    :class="{ active: card.isActive }"
+    class="card hide" 
+    >
+      <img class="card" v-bind:src="card.src" alt="">
+    </div>
+    <button v-if="isWinner">Play again</button>
   </div>
   <script>
     new Vue({
       el: '#app',
       data() {
         return {
+          id: 0,
           limit: 6,
-          cards: [],
+          cards: [
+            { 
+              name: 'bull', 
+              src: './img/bull.svg',
+              isActive: false,
+            },
+            { 
+              name: 'butterfly', 
+              src: './img/butterfly.svg',
+              isActive: false, 
+            },
+            { 
+              name: 'cat', 
+              src: './img/cat.svg',
+              isActive: false, 
+            },
+            { 
+              name: 'crab', 
+              src: './img/crab.svg',
+              isActive: false,
+             },
+            { 
+              name: 'lion', 
+              src: './img/lion.svg',
+              isActive: false, 
+            },
+            { 
+              name: 'monkey', 
+              src: './img/monkey.svg',
+              isActive: false,
+             },
+            { 
+              name: 'polar-bear', 
+              src: './img/polar-bear.svg',
+              isActive: false,
+            },
+            { 
+              name: 'scorpion', 
+              src: './img/scorpion.svg',
+              isActive: false, 
+            },
+            { 
+              name: 'snake', 
+              src: './img/snake.svg',
+              isActive: false,
+             },
+            { 
+              name: 'turtle', 
+              src: './img/turtle.svg',
+              isActive: false,
+            },
+            { 
+              name: 'wolf-head', 
+              src: './img/wolf-head.svg',
+              isActive: false, 
+            },
+          ],
+          last: null,
+          current: null,
         }
       },
-      created() {
-        const {limit, cards} = this
-        for (let i = 1; i <= limit; i++) {
-          cards.push(`./img/card_${i}.svg`)
-        }
+      computed: {
+        passed() { 
+          return this.cards.filter(card => !!card.isActive) 
+        },
+        isWinner() {
+          return this.cards.length === this.passed.length
+        },
+      },
+      mounted() {
+        let {limit, cards} = this
+        cards.splice(0, --limit)
+        const DOMcards = document.querySelectorAll('div.card')
+        DOMcards.forEach((element, index) => element.id = `card_${index}`);
       },
       methods: {
-        cardClicker(event) {
-          event.target.classList.toggle("hide")
+        cardClicker(val, event) {
+          // let {last, current} = this
+          let target = event.currentTarget
+          if (!!this.current && this.current.id === target.id) return 
+          target.classList.toggle("hide")
+          this.last = this.current
+          this.current = {
+            id: target.id,
+            name: val.name,
+          }
+          if (!!this.last && this.last.name === this.current.name) {
+            this.cards.find(card => card.name === this.current.name).isActive = true
+            this.current = null
+            this.last = null
+          } else if (!!this.last) {
+            const buffer = { 
+              current: this.current, 
+              last: this.last
+            }
+            setTimeout(() => {
+              document.getElementById(buffer.last.id).classList.add("hide")
+              document.getElementById(buffer.current.id).classList.add("hide")
+            }, 500)
+            this.current = null
+            this.last = null
+          }
         },
       }
     })
@@ -53,34 +159,28 @@
       height: 100vh; 
       margin: auto;
     }
-    img {
+    .card {
+      background: #000000;
+    }
+    .card {
       display: block;
       position: relative;
       width: calc(100vw / 5);
-      transition: all 2s linear;
+      transition: transform 0.5s linear;
       -webkit-transform-style: preserve-3d;
-      -webkit-backface-visibility: hidden;
+      transform-style: preserve-3d;
       transform: rotateY(0deg);
     }
-    img:hover {
+    .card.hide:not(.active) {
       transform: rotateY(180deg);
     }
-    img.hide:after {
-    content: '';
-    position: absolute;
-    display: block;
-    right: 0px;
-    bottom: 0px;
-    top: 0px;
-    left: 0px;
-    background: black;
-    /* -webkit-transform: rotateY( 180deg );
-    -webkit-transform-style: preserve-3d;
-    -webkit-backface-visibility: hidden; */
-}
-
-    img.show {
-      transform: rotateY(0);
+    .card.active {
+      transform: rotateY(0deg);
+      opacity: 0.8;
+    }
+    img{
+      -webkit-backface-visibility: hidden;
+      backface-visibility: hidden;
     }
   </style>
 </body>
