@@ -93,6 +93,9 @@ new Vue({
         element.id = `card_${index}`
         element.style.order = random
       });
+      window.innerWidth <= 786
+      ? this.limit = '6'
+      : this.limit = '8'
     },
     methods: {
       cardClicker(val, event) {
