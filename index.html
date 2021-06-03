@@ -1,34 +1,55 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
-  <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.js"></script>
-</head>
-<body>
-  <section id="app">    
-    <header>
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.js"></script>
+    <link rel="stylesheet" href="./css/style.css">
+  </head>
+  <body>
+    <section id="app">    
+      <header>
       <form action="/" @submit.prevent>
-        <label for="limits">Choose a size:</label>
+        <label for="limits">SIZE:</label>
         <select name="limits" id="limits" v-model="limit">
           <option value="12" active>24</option>
           <option value="8">16</option>
           <option value="6">12</option>
         </select>
       </form>
-      <button v-if="isWinner" @click="winnerClicker" id="restartBtn">Play again</button>
-      <button :disabled="!isPaused" @click="isPaused = !isPaused">Start</button>
-      <button :disabled="isPaused" @click="isPaused = !isPaused">Stop</button>
+      <button 
+      v-if="isWinner" 
+      @click="winnerClicker" 
+      id="restartBtn" 
+      class="btn" 
+      @mouseover="$event.target.classList.add('active')"
+      @mouseleave="$event.target.classList.remove('active')"
+      ><SPAN>PLAY AGAIN</SPAN></button>
+      <button 
+      :disabled="!isPaused" 
+      @click="isPaused = !isPaused"
+      class="btn" 
+      @mouseover="$event.target.classList.add('active')"
+      @mouseleave="$event.target.classList.remove('active')"
+      ><span>START</span></button>
+      <button 
+      :disabled="isPaused || isWinner" 
+      @click="isPaused = !isPaused" 
+      class="btn" 
+      @mouseover="$event.target.classList.add('active')"
+      @mouseleave="$event.target.classList.remove('active')"
+      ><span>STOP</span></button>
       <div class="results">
         <span>Best result: {{ getTime(bestResult) }}</span>
         <span>Current result: {{ getTime(result) }}</span>
       </div>
     </header>
     <div id="container" class="large">
-      <div class="placeholder" v-if="isPaused"><p>PAUSED</p></div>
-      <div class="placeholder" v-if="isWinner"><p>CONGATULATIONS!</p></div>
+      <div class="placeholder" v-if="isPaused && !!bestResult"><p>PAUSED</p></div>
+      <div class="placeholder" v-else-if="isPaused && !bestResult"><p>START</p></div>
+      <div class="placeholder" v-else-if="isWinner"><p>CONGATULATIONS!</p></div>
       <div 
       v-for="(card, index) in cards" 
       v-on:click="cardClicker(card, $event)" 
@@ -36,318 +57,19 @@
       class="card hide" 
       v-if=" index < Number(limit)"
       >
-        <img class="card" v-bind:src="card.src" alt="">
-      </div>
-      <div 
-      v-for="(card, index) in cards" 
-      v-on:click="cardClicker(card, $event)" 
-      :class="{ active: card.isActive }"
-      class="card hide" 
-      v-if=" index < Number(limit)"
-      >
-        <img class="card" v-bind:src="card.src" alt="">
-      </div>
+      <img class="card" v-bind:src="card.src" alt="">
     </div>
-  </section>
-  <script>
-    new Vue({
-      el: '#app',
-      data() {
-        return {
-          isPaused: false,
-          result: 0,
-          results: [],
-          interval: setInterval(() => this.result += 100, 100),
-          limit: '12',
-          cards: [
-            { 
-              name: 'bull', 
-              src: './img/bull.svg',
-              isActive: false,
-            },
-            { 
-              name: 'butterfly', 
-              src: './img/butterfly.svg',
-              isActive: false, 
-            },
-            { 
-              name: 'cat', 
-              src: './img/cat.svg',
-              isActive: false, 
-            },
-            { 
-              name: 'crab', 
-              src: './img/crab.svg',
-              isActive: false,
-            },
-            { 
-              name: 'lion', 
-              src: './img/lion.svg',
-              isActive: false, 
-            },
-            { 
-              name: 'monkey', 
-              src: './img/monkey.svg',
-              isActive: false,
-            },
-            { 
-              name: 'polar-bear', 
-              src: './img/polar-bear.svg',
-              isActive: false,
-            },
-            { 
-              name: 'scorpion', 
-              src: './img/scorpion.svg',
-              isActive: false, 
-            },
-            { 
-              name: 'snake', 
-              src: './img/snake.svg',
-              isActive: false,
-            },
-            { 
-              name: 'swan', 
-              src: './img/swan.svg',
-              isActive: false,
-            },
-            { 
-              name: 'turtle', 
-              src: './img/turtle.svg',
-              isActive: false,
-            },
-            { 
-              name: 'wolf-head', 
-              src: './img/wolf-head.svg',
-              isActive: false, 
-            },
-          ],
-          last: null,
-          current: null,
-        }
-      },
-      computed: {
-        passed() { 
-          return this.cards.filter(card => !!card && !!card.isActive) 
-        },
-        isWinner() {
-          return this.passed.filter(card => !!card).length - this.limit === 0
-        },
-        bestResult() {
-          return Math.min(...this.results) | '--'
-        }
-      },
-      mounted() {
-        let {cards} = this
-        // cards.splice(0, --limit)
-        const DOMcards = document.querySelectorAll('div.card')
-        DOMcards.forEach((element, index) => {
-          const random = Math.floor(Math.random() * (DOMcards.length - 0 + 1)) + 0
-          element.id = `card_${index}`
-          element.style.order = random
-        });
-      },
-      methods: {
-        cardClicker(val, event) {
-          // let {last, current} = this
-          let target = event.currentTarget
-          if (!!this.current && this.current.id === target.id || this.isPaused) return 
-          target.classList.toggle("hide")
-          this.last = this.current
-          this.current = {
-            id: target.id,
-            name: val.name,
-          }
-          if (!!this.last && this.last.name === this.current.name) {
-            this.cards.find(card => card.name === this.current.name).isActive = true
-            this.current = null
-            this.last = null
-          } else if (!!this.last) {
-            const buffer = { 
-              current: this.current, 
-              last: this.last
-            }
-            setTimeout(() => {
-              document.getElementById(buffer.last.id).classList.add("hide")
-              document.getElementById(buffer.current.id).classList.add("hide")
-            }, 500)
-            this.current = null
-            this.last = null
-          }
-        },
-        getTime(ms) {
-          const dt = new Date(ms);
-          function addZ(n) {
-            return (n<10? '0':'') + n;
-          }
-          // const hrs = dt.getHours();
-          const mins = dt.getMinutes();
-          const secs = dt.getSeconds();
-          const millis = dt.getMilliseconds();
-
-          return  addZ(mins) + ':' + addZ(secs) + "." + Math.floor(millis / 100);
-        },
-        winnerClicker() {
-          this.cards.map(card => card.isActive = false)
-          this.result = 0
-          this.interval = setInterval(() => this.result += 100, 100)
-        },
-      },
-      watch: {
-        isPaused() {
-          !this.isPaused
-          ? this.interval = setInterval(() => this.result += 100, 100)
-          : clearInterval(this.interval)
-        },
-        isWinner() {
-          if (!!this.isWinner) {
-            clearInterval(this.interval)
-            this.results.push(this.result)
-          }
-        },
-        limit() {
-          const DOMcards = document.querySelectorAll('div.card')
-          const container = document.getElementById('container')
-          this.result = 0
-          this.results = []
-          this.isPaused = true
-          DOMcards.forEach((element, index) => {
-            element.classList.add('hide')
-            element.classList.remove('active')
-          });
-          switch(this.limit) {
-            case '12': 
-              container.className = 'large'
-              break;
-            case '8': 
-              container.className = 'medium'
-              break;
-            case '6': 
-              container.className = 'small'
-              break;
-          }
-        }
-      }
-    })
-  </script>
-  <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      min-height: 100vh;
-    }
-    header {
-      width: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-    }
-    header span{
-      margin: 0;
-      padding: 1rem 1.5rem;
-      float: right;
-    }
-    #app {
-      height: 100vh;
-      background-color: #003366b3;
-      position: relative;
-    }
-    #container {
-      position: relative;
-      box-sizing: border-box;
-      padding: 3rem;
-
-      display: grid;
-      /* grid-template-columns: repeat(6, 1fr); */
-      gap: 1rem;
-
-      max-width: 700px;
-      margin: auto;
-    }
-    .card {
-      background-color: #000000;
-    }
-    .card {
-      display: block;
-      position: relative;
-      box-sizing: border-box;
-
-      transition: 
-      transform 0.5s linear;
-      -webkit-transform-style: preserve-3d;
-      transform-style: preserve-3d;
-      transform: rotateY(0deg);
-    }
-    .card.hide:not(.active) {
-      transform: rotateY(180deg);
-    }
-    .card.active {
-      transform: rotateY(0deg);
-      animation-name: passed;
-      animation-duration: 0.3s;
-      animation-fill-mode: forwards;
-      animation-direction: alternate;
-    }
-    .card.active img {
-      opacity: 0.7;
-    }
-    img{
-      -webkit-backface-visibility: hidden;
-      backface-visibility: hidden;
-    }
-    .placeholder {
-      position: absolute;
-      top: 0;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background-color: #00000088;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .placeholder p {
-      font-size: 3rem;
-      color: aliceblue;
-      z-index: 2;
-      transform: translateY(-100%);
-    }
-    .results {
-      padding: 0.5rem 1rem;
-      margin: 0;
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-    }
-    .results span {
-      margin: 0;
-      padding: 0;
-    }
-    #restartBtn {
-      justify-self: flex-start;
-      margin: 0 0.5rem;
-    }
-    #limits {
-      padding: 0.1rem 0.25rem;
-      margin: 0 1rem 0 0;
-    }
-    @keyframes passed {
-      from {
-        background-color: #000;
-      } to {
-        background-color: #0eaf6c;
-      }
-    }
-    #container.large {
-      grid-template-columns: repeat(6, 1fr);
-    }
-    #container.medium {
-      grid-template-columns: repeat(4, 1fr);
-      max-width: 500px;
-    }
-    #container.small {
-      grid-template-columns: repeat(4, 1fr);
-      max-width: 500px;
-    }
-  </style>
+    <div 
+    v-for="(card, index) in cards" 
+    v-on:click="cardClicker(card, $event)" 
+    :class="{ active: card.isActive }"
+    class="card hide" 
+    v-if=" index < Number(limit)"
+    >
+    <img class="card" v-bind:src="card.src" alt="">
+  </div>
+</div>
+</section>
+<script src="./index.js"></script>
 </body>
 </html>
